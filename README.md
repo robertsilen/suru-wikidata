@@ -63,8 +63,9 @@ curl -O https://kaino.kotus.fi/lataa/nykysuomensanalista2024.txt
 
 Run ```05_filter.py``` to filter to smaller subsets with: 
 
-1. Most searched for words
-2. Finland specific words
+1. All existing Finnish Wikidata lexemes
+2. Most searched for words
+3. Finland specific words
 
 ### 6. Fetch Wikidata lexeme details
 
