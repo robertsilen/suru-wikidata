@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "SuRu Wikidata Lexemes",
+  "version": "1.0",
+  "description": "Displays Wikidata lexeme information for Kotus dictionary pages",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://kaino.kotus.fi/*",
+    "https://query.wikidata.org/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://kaino.kotus.fi/suomi-ruotsi/*",
+        "https://kaino.kotus.fi/finsk-svensk/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "icons": {
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+} 

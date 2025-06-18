@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+    <rect width="128" height="128" fill="#f0f0f0" rx="20"/>
+    <text x="64" y="64" font-family="Arial" font-size="80" text-anchor="middle" dominant-baseline="middle" fill="#0645ad">SR</text>
+</svg> 
