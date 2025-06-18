@@ -59,13 +59,13 @@ curl -O https://kaino.kotus.fi/lataa/nykysuomensanalista2024.txt
 
 ```Total rows: 111765```
 
-### 5. Filter to subset
+### 5. Filter to subset to work on
 
 Run ```05_filter.py``` to filter to smaller subsets with: 
 
-1. All existing Finnish Wikidata lexemes
-2. Most searched for words
-3. Finland specific words
+1. All existing Finnish Wikidata lexemes, https://w.wiki/DfFQ
+2. Most searched for words in Suru
+3. Finland specific words in Suru
 
 ### 6. Fetch Wikidata lexeme details
 
@@ -73,4 +73,12 @@ Run ```06_match_lexeme.py``` to match Finnish headwords and Swedish translations
 
 ### 7. Create new lexemes (or add suru_id to existing lexemes)
 
-Create new Finnish lexemes with suru_id, sense and object. 
+## 7.1 Create indvidiaul lexemes 
+
+Use ```07_create_lex.py``` to create new lexemes with suru_id, sense and object. 
+
+## 7.2 Create lexemes with browser extension
+
+To update and create lexemes while browsing https://kaino.kotus.fi/finsk-svensk/: load folder ```suru-wikidata-extension``` in a Chrome compatible browser at [chrome://extensions](chrome://extensions). 
+
+To use the extension widget's "create lexem with flask" link, run ```python 07_create_lex_flask.py``` . Requires [LexData](https://nudin.github.io/LexData/) and adding a .env file with WIKI_USERNAME, WIKI_PASSWORD and WIKI_EMAIL for authentication. 

@@ -1,11 +1,11 @@
 import pandas as pd
 
 # Read the Excel file
-suru_df = pd.read_excel('suru-wikidata/03_suru.xlsx')
+suru_df = pd.read_excel('03_suru.xlsx')
 
 # Read the TSV file (which has .txt extension)
 # Since it's a TSV file, we'll use tab as the separator
-nykysuomi_df = pd.read_csv('suru-wikidata/nykysuomensanalista2024.txt', sep='\t')
+nykysuomi_df = pd.read_csv('nykysuomensanalista2024.txt', sep='\t')
 
 # Display basic information about the dataframes
 print("\nSURU DataFrame Info:")

@@ -118,4 +118,20 @@ for result in results[:5]:
 
 print(f"Total results: {len(results)}")
 
+# Count entries with 'ks' value
+ks_count = sum(1 for result in results if result['ks'] is not None)
+print(f"Number of entries with 'ks' value: {ks_count}")
+
+# Count entries with 'seealso' value
+seealso_count = sum(1 for result in results if result['seealso'] is not None)
+print(f"Number of entries with 'seealso' value: {seealso_count}")
+
+# Count entries with translations
+translations_count = sum(1 for result in results if result['translations'])
+print(f"Number of entries with translations: {translations_count}")
+
+# Count entries with sense_groups
+sense_groups_count = sum(1 for result in results if result['sense_groups'])
+print(f"Number of entries with sense_groups: {sense_groups_count}")
+
 save_to_xlsx(results, "03_suru.xlsx")
