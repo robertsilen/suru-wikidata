@@ -2,6 +2,8 @@ import logging
 import pandas as pd
 import json
 import uuid
+import os
+from dotenv import load_dotenv
 
 import LexData
 from LexData.language import en
@@ -9,8 +11,21 @@ from LexData.claim import Claim
 fi = LexData.Language("fi", "Q1412")
 import requests
 
+# Load environment variables from .env file
+load_dotenv()
+
 logging.basicConfig(level=logging.INFO)
-repo = LexData.WikidataSession("", "")
+
+# Get credentials from environment variables
+wiki_username = os.getenv("WIKI_USERNAME")
+wiki_password = os.getenv("WIKI_PASSWORD")
+wiki_email = os.getenv("WIKI_EMAIL")
+quickstatement_token = os.getenv("QUICKSTATEMENT_TOKEN")
+
+if not wiki_username or not wiki_password:
+    raise ValueError("WIKI_USERNAME and WIKI_PASSWORD must be set in .env file")
+
+repo = LexData.WikidataSession(wiki_username, wiki_password)
 categories = {
     "noun": "Q1084",
     "adjective": "Q34698",
@@ -21,6 +36,7 @@ def add(lang, lemma, category, suru_id, sv_gloss, betydelse_objekt):
     if category_id is None:
         raise ValueError(f"Unknown category for {lang} {lemma}: {category}")
 
+    # Find or create lexeme
     L2 = LexData.get_or_create_lexeme(repo, lemma, fi, category_id)
     lexeme_id = L2['id']
     print(f"Created lexeme for {lang}:{lemma}, {category}, URL: https://www.wikidata.org/wiki/Lexeme:{lexeme_id}")
@@ -30,33 +46,68 @@ def add(lang, lemma, category, suru_id, sv_gloss, betydelse_objekt):
         suru_property = "P12682"
         suru_value = suru_id.replace("SURU_", "")    
         
-        # Use Wikidata API directly
+        # Use Wikidata API directly with proper authentication
         api_url = "https://www.wikidata.org/w/api.php"
-        username = "Robertsilen"
-        # NOTE: For security, use a secure method to store your token in production
-        token = "$2y$10$4Xu5WC7e0Yg4GiIdPoluQezWX3ZUlOtA.V.ZHnwGj122ELV9XU/Ay"
         
-        # First, get an edit token
+        # Create session and authenticate
         session = requests.Session()
         session.headers.update({
-            'User-Agent': 'SuruWikidataBot/1.0 (https://github.com/your-repo; your-email@example.com)'
+            'User-Agent': f'SuruWikidataBot/1.0 (https://github.com/robertsilen/suru-wikidata; {wiki_email})'
         })
         
-        # Get CSRF token
-        token_params = {
+        # Step 1: Get login token
+        login_token_params = {
+            'action': 'query',
+            'meta': 'tokens',
+            'type': 'login',
+            'format': 'json'
+        }
+        
+        login_token_response = session.get(api_url, params=login_token_params)
+        if login_token_response.status_code != 200:
+            print(f"Failed to get login token. Status: {login_token_response.status_code}")
+            return None
+            
+        login_token_data = login_token_response.json()
+        login_token = login_token_data['query']['tokens']['logintoken']
+        print(f"Got login token: {login_token}")
+        
+        # Step 2: Perform login
+        login_data = {
+            'action': 'login',
+            'lgname': wiki_username,
+            'lgpassword': wiki_password,
+            'lgtoken': login_token,
+            'format': 'json'
+        }
+        
+        login_response = session.post(api_url, data=login_data)
+        if login_response.status_code != 200:
+            print(f"Failed to login. Status: {login_response.status_code}")
+            return None
+            
+        login_result = login_response.json()
+        if login_result.get('login', {}).get('result') != 'Success':
+            print(f"Login failed: {login_result}")
+            return None
+            
+        print("Successfully logged in to Wikidata")
+        
+        # Step 3: Get CSRF token for editing
+        csrf_token_params = {
             'action': 'query',
             'meta': 'tokens',
             'type': 'csrf',
             'format': 'json'
         }
         
-        token_response = session.get(api_url, params=token_params)
-        if token_response.status_code == 200:
-            token_data = token_response.json()
-            csrf_token = token_data['query']['tokens']['csrftoken']
+        csrf_response = session.get(api_url, params=csrf_token_params)
+        if csrf_response.status_code == 200:
+            csrf_data = csrf_response.json()
+            csrf_token = csrf_data['query']['tokens']['csrftoken']
             print(f"Got CSRF token: {csrf_token}")
             
-            # Add the claim
+            # Step 4: Add the claim
             claim_data = {
                 'action': 'wbcreateclaim',
                 'entity': lexeme_id,
@@ -67,8 +118,7 @@ def add(lang, lemma, category, suru_id, sv_gloss, betydelse_objekt):
                 'format': 'json'
             }
             
-            print(f"Wikidata API URL: {api_url}")
-            print(f"Claim data: {claim_data}")
+            print(f"Adding claim with data: {claim_data}")
             
             claim_response = session.post(api_url, data=claim_data)
             if claim_response.status_code == 200:
@@ -80,8 +130,10 @@ def add(lang, lemma, category, suru_id, sv_gloss, betydelse_objekt):
             else:
                 print(f"Failed to add claim. Status: {claim_response.status_code}, Response: {claim_response.text}")
         else:
-            print(f"Failed to get CSRF token. Status: {token_response.status_code}, Response: {token_response.text}")
+            print(f"Failed to get CSRF token. Status: {csrf_response.status_code}, Response: {csrf_response.text}")
     
+
+    # Add sense to lexeme
     if len(L2.senses) == 0 and sv_gloss is not None and betydelse_objekt is not None:
         L2.createSense(
             {"sv": sv_gloss},
