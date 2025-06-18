@@ -10,7 +10,7 @@ fi = LexData.Language("fi", "Q1412")
 import requests
 
 logging.basicConfig(level=logging.INFO)
-repo = LexData.WikidataSession("Robertsilen", "klem_PHIB.wruh0gang")
+repo = LexData.WikidataSession("", "")
 categories = {
     "noun": "Q1084",
     "adjective": "Q34698",
